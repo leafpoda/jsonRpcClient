@@ -110,7 +110,7 @@ class Client {
         // check
         if (is_array($params)) {
             // no keys
-            $params = array_values($params);
+            $params = array_pop($params);
         } else {
             throw new JsonrpcException('Params must be given as array');
         }
@@ -138,6 +138,9 @@ class Client {
         curl_setopt($ch, CURLOPT_POSTFIELDS, $request);
         $response = json_decode(curl_exec($ch),true);
         curl_close($ch);
+        if (is_null($response)){
+            throw new JsonrpcException('Error Request');
+        }
         // debug output
         if ($this->debug) {
             echo nl2br($this->debug);
