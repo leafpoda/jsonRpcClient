@@ -1,6 +1,6 @@
 <?php
 
-namespace Leafpoda\JsonRpcClien;
+namespace Leafpoda\JsonRpcClient\Rpc;
 
 use Consul\Services\Agent;
 use Exception;

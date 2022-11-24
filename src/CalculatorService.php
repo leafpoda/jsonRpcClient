@@ -2,7 +2,7 @@
 
 namespace Leafpoda\JsonRpcClient;
 
-use Leafpoda\JsonRpcClien\JsonRpc;
+use Leafpoda\JsonRpcClient\JsonRpc;
 
 class CalculatorService extends JsonRpc implements ClientInterface
 {
