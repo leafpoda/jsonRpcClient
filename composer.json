@@ -1,0 +1,14 @@
+{
+    "name": "leafpoda/json-rpc-client",
+    "autoload": {
+        "psr-4": {
+            "Leafpoda\\JsonRpcClient\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "cayden"
+        }
+    ],
+    "require": {}
+}
