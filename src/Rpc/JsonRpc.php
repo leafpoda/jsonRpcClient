@@ -19,14 +19,6 @@ class JsonRpc
      */
     protected Client $client;
 
-    /**
-     * @var array Default config values
-     */
-    public static array $config = array(
-        'HOST' => '127.0.0.1',
-        'PORT' => 8084,
-        'PATH' => '/'
-    );
 
     /**
      * Singleton instance of JsonRPC.
@@ -58,23 +50,9 @@ class JsonRpc
 
         $serviceNameArray=explode('\\',$serviceName);
         $serviceName =array_pop($serviceNameArray);
-        try {
-            $kv = new Agent();
-            $services = $kv->services()->getBody();
-            $services = json_decode($services,true);
-            $services = array_column($services,null,"Service");
-            if (!isset($services[$serviceName])){
-                throw  new JsonrpcException("NOT FOUND SERVICE");
-            }
-            Jsonrpc::$config['PORT'] = $services[$serviceName]['Port'];
-            Jsonrpc::$config['HOST'] =$services[$serviceName]['Address'];
-        }catch (Exception $exception){
-            throw  new JsonrpcException($exception->getMessage());
-        }
         // Store the config group name as well, so the drivers can access it
         $class = strtolower( str_replace("Service",'',$serviceName));
-        $addr = sprintf("http://%s:%u%s", Jsonrpc::$config['HOST'], Jsonrpc::$config['PORT'], Jsonrpc::$config['PATH']);
-        $this->client = new Client($addr, "/$class/", false);
+        $this->client = new Client((new Consul())->getNode($serviceName), "/$class/", false);
     }
 
     /**
