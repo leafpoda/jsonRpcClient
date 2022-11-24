@@ -2,9 +2,8 @@
 
 namespace Leafpoda\JsonRpcClien\Jsonrpc;
 
-
 use Exception;
-use JsonrpcException;
+use Leafpoda\JsonRpcClien\Exception\JsonrpcException;
 
 class Jsonrpc
 {
@@ -36,7 +35,7 @@ class Jsonrpc
      * @return object
      * @throws JsonrpcException
      */
-    public static function instance($group = 'default')
+    public static function instance(string $group = 'default')
     {
         if (!isset(Jsonrpc::$instance)) {
             // Load the configuration for this group
@@ -90,63 +89,31 @@ class Jsonrpc
                 Jsonrpc::$config[$key] = $value;
             }
         }
+        $class = (isset(Jsonrpc::$config['CLASS']) && Jsonrpc::$config['CLASS'])?Jsonrpc::$config['CLASS']:$group;
 
         // Store the config group name as well, so the drivers can access it
         Jsonrpc::$config['group'] = $group;
+        $class = (isset(Jsonrpc::$config['CLASS']) && Jsonrpc::$config['CLASS'])? Jsonrpc::$config['CLASS']:$group;
+        $classArray=explode('\\',$class);
+        $class = strtolower( str_replace("Service",'',array_pop($classArray)));
         $addr = sprintf("http://%s:%u%s", Jsonrpc::$config['HOST'], Jsonrpc::$config['PORT'], Jsonrpc::$config['PATH']);
-        $this->client = new Client($addr, Jsonrpc::$config['CLASS'], false);
-    }
-
-    protected function check_params($must_have, $params)
-    {
-        $intersect = array_intersect($must_have, array_keys($params));
-        return count($must_have) === count($intersect);
-    }
-
-    protected function decode_result($recv)
-    {
-        if (!isset($recv['Message'])) {
-            return null;
-        }
-        $res = json_decode($recv['Message']);
-        if (!empty($res->Vars)) {
-            $res->Vars = json_decode($res->Vars, true);
-        }
-        return $res;
+        $this->client = new Client($addr, "/$class/", false);
     }
 
     /**
+     * @param $must_have
      * @param $params
-     * @param $app
-     * @param $timeout
-     * @return mixed|null
+     * @return void
      * @throws JsonrpcException
      */
-    public function get_delegate_reports($params, $app, $timeout = 0)
+    protected function check_params($must_have, $params)
     {
-        $must_have = array('Session', 'Nick', 'AccountId', 'DelegateId', 'SubwayToken');
-        if (!$this->check_params($must_have, $params)) {
+        $intersect = array_intersect($must_have, array_keys($params));
+        if (!(count($must_have) === count($intersect))) {
             throw new JsonrpcException("Missing parameters");
         }
-        foreach ($params as $k => $v) {
-            if (is_numeric($v)) {
-                $params[$k] = (int)$v;
-            }
-        }
-        if (!isset($params['Force'])) {
-            $params['Force'] = true;
-        }
-        $params['AnApiKey'] = array('Key' => $app['key'], 'Secret' => $app['secret']);
-        $msg = array('Vars' => json_encode($params));
-        $retries = 3;
-        while ($retries > 0) {
-            try {
-                $recv = $this->client->GetDelegateReports($msg);
-                return $this->decode_result($recv);
-            } catch (Exception $e) {
-                $retries--;
-            }
-        }
-        return null;
     }
+
+
+
 }

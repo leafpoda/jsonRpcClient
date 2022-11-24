@@ -22,7 +22,7 @@ along with JSON-RPC PHP; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-use JsonrpcException;
+use Leafpoda\JsonRpcClien\Exception\JsonrpcException;
 
 
 /**
@@ -142,19 +142,16 @@ class Client {
         if ($this->debug) {
             echo nl2br($this->debug);
         }
-        
         // final checks and return
         if (!$this->notification) {
             // check
             if ($response['id'] != $currentId) {
                 throw new JsonrpcException('Incorrect response id (request id: '.$currentId.', response id: '.$response['id'].')');
             }
-            if (!is_null($response['error'])) {
-                throw new JsonrpcException('Request error: '.$response['error']);
+            if (!is_null($response['error']??null)) {
+                throw new JsonrpcException('Request error: '.implode(',',$response['error']));
             }
-            
             return $response['result'];
-            
         } else {
             return true;
         }

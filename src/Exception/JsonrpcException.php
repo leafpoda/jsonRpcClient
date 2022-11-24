@@ -1,6 +1,6 @@
 <?php
-
-class JsonrpcException extends Exception
+namespace Leafpoda\JsonRpcClien\Exception;
+class JsonrpcException extends \Exception
 {
 
 }

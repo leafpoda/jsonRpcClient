@@ -10,5 +10,8 @@
             "name": "cayden"
         }
     ],
-    "require": {}
+    "require": {
+        "ext-json": "*",
+        "ext-curl": "*"
+    }
 }
