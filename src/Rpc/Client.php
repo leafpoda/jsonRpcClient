@@ -100,7 +100,7 @@ class Client {
      * @return array|bool
      * @throws JsonrpcException
      */
-    public function __call(string $method, array $params) {
+    public function __call( $method,  $params) {
         
         // check
         if (!is_scalar($method)) {
@@ -124,9 +124,9 @@ class Client {
         
         // prepares the request
         $request = array(
-            'method' => $this->class.".".$method,
+            'method' => $this->class.$method,
             'params' => $params,
-            'id' => $currentId
+            'id' =>(string) $currentId
         );
         $request = json_encode($request);
         $this->debug && $this->debug.='***** Request *****'."\n".$request."\n".'***** End Of request *****'."\n\n";
