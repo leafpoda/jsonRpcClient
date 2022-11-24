@@ -1,5 +1,5 @@
 <?php
-namespace Leafpoda\JsonRpcClien\Exception;
+namespace Leafpoda\JsonRpcClient\Exception;
 class JsonrpcException extends \Exception
 {
 

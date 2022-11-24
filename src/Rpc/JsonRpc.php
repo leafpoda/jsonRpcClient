@@ -4,7 +4,7 @@ namespace Leafpoda\JsonRpcClient\Rpc;
 
 use Consul\Services\Agent;
 use Exception;
-use Leafpoda\JsonRpcClien\Exception\JsonrpcException;
+use Leafpoda\JsonRpcClient\Exception\JsonrpcException;
 
 class JsonRpc
 {
