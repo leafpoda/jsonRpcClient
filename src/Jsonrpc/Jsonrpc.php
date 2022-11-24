@@ -2,6 +2,7 @@
 
 namespace Leafpoda\JsonRpcClien\Jsonrpc;
 
+use Consul\Services\Agent;
 use Exception;
 use Leafpoda\JsonRpcClien\Exception\JsonrpcException;
 
@@ -11,21 +12,20 @@ class Jsonrpc
     /**
      * @var object JsonRPC singleton
      */
-    public static $instance;
+    public static object $instance;
 
     /**
      * @var Client
      */
-    protected $client;
+    protected Client $client;
 
     /**
      * @var array Default config values
      */
-    public static $config = array(
+    public static array $config = array(
         'HOST' => '127.0.0.1',
         'PORT' => 8084,
-        'PATH' => '/api',
-        'CLASS' => 'ApiService',
+        'PATH' => '/'
     );
 
     /**
@@ -51,51 +51,28 @@ class Jsonrpc
      * @param string Config group name
      * @throws JsonrpcException
      */
-    public function __construct($group = null)
+    public function __construct($serviceName = null)
     {
         // Create a singleton instance once
         empty(Jsonrpc::$instance) and Jsonrpc::$instance = $this;
 
-        // No config group name given
-        if (!is_string($group)) {
-            $group = 'default';
-        }
-
-        // Load and validate config group
-        if (!is_array($config = config("jsonrpc.$group"))) {
-            throw new JsonrpcException(
-                'jsonrpc group not defined in :group configuration',
-                array(':group' => $group)
-            );
-        }
-
-        // All jsonprc config groups inherit default config group
-        if ($group !== 'default') {
-            // Load and validate default config group
-            if (!is_array($default = config("jsonrpc.default"))) {
-                throw new JsonrpcException(
-                    'jsonrpc group not defined in :group configuration',
-                    array(':group' => 'default')
-                );
+        $serviceNameArray=explode('\\',$serviceName);
+        $serviceName =array_pop($serviceNameArray);
+        try {
+            $kv = new Agent();
+            $services = $kv->services()->getBody();
+            $services = json_decode($services,true);
+            $services = array_column($services,null,"Service");
+            if (!isset($services[$serviceName])){
+                throw  new JsonrpcException("NOT FOUND SERVICE");
             }
-
-            // Merge config group with default config group
-            $config += $default;
+            Jsonrpc::$config['PORT'] = $services[$serviceName]['Port'];
+            Jsonrpc::$config['HOST'] =$services[$serviceName]['Address'];
+        }catch (Exception $exception){
+            throw  new JsonrpcException($exception->getMessage());
         }
-
-        // Assign config values to the object
-        foreach ($config as $key => $value) {
-            if (array_key_exists($key, Jsonrpc::$config)) {
-                Jsonrpc::$config[$key] = $value;
-            }
-        }
-        $class = (isset(Jsonrpc::$config['CLASS']) && Jsonrpc::$config['CLASS'])?Jsonrpc::$config['CLASS']:$group;
-
         // Store the config group name as well, so the drivers can access it
-        Jsonrpc::$config['group'] = $group;
-        $class = (isset(Jsonrpc::$config['CLASS']) && Jsonrpc::$config['CLASS'])? Jsonrpc::$config['CLASS']:$group;
-        $classArray=explode('\\',$class);
-        $class = strtolower( str_replace("Service",'',array_pop($classArray)));
+        $class = strtolower( str_replace("Service",'',$serviceName));
         $addr = sprintf("http://%s:%u%s", Jsonrpc::$config['HOST'], Jsonrpc::$config['PORT'], Jsonrpc::$config['PATH']);
         $this->client = new Client($addr, "/$class/", false);
     }

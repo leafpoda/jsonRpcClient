@@ -12,6 +12,7 @@
     ],
     "require": {
         "ext-json": "*",
-        "ext-curl": "*"
+        "ext-curl": "*",
+        "sensiolabs/consul-php-sdk": "^5.0"
     }
 }
