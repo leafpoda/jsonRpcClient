@@ -14,5 +14,6 @@
         "ext-json": "*",
         "ext-curl": "*",
         "sensiolabs/consul-php-sdk": "^5.0"
-    }
+    },
+    "license": "MIT"
 }
