@@ -1,5 +1,5 @@
 <?php
-namespace Leafpoda\JsonRpcClien\Rpc;
+namespace Leafpoda\JsonRpcClien;
 /*
                     COPYRIGHT
 
