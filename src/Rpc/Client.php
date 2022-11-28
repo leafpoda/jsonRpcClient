@@ -128,7 +128,9 @@ class Client {
             'id' =>(string) $currentId
         );
         try {
-            $client = new \GuzzleHttp\Client();
+            $client = new \GuzzleHttp\Client([
+                'handler' => (new Retry())->handler,
+            ]);
             $opts = [
                 'headers' => [
                     'accept-encoding' => 'gzip, deflate',
