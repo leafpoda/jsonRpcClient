@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 use Leafpoda\JsonRpcClient\Exception\JsonrpcException;
+use stringEncode\Exception;
 
 
 /**
@@ -121,42 +122,27 @@ class Client {
         } else {
             $currentId = $this->id;
         }
-        
-        // prepares the request
         $request = array(
             'method' => $this->class.$method,
             'params' => $params,
             'id' =>(string) $currentId
         );
-        $request = json_encode($request);
-        $this->debug && $this->debug.='***** Request *****'."\n".$request."\n".'***** End Of request *****'."\n\n";
-        // performs the HTTP POST
-        $ch = curl_init($this->url);
-        curl_setopt($ch,CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-type: application/json'));
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $request);
-        $response = json_decode(curl_exec($ch),true);
-        curl_close($ch);
-        if (is_null($response)){
-            throw new JsonrpcException('Error Request');
-        }
-        // debug output
-        if ($this->debug) {
-            echo nl2br($this->debug);
-        }
-        // final checks and return
-        if (!$this->notification) {
-            // check
-            if ($response['id'] != $currentId) {
-                throw new JsonrpcException('Incorrect response id (request id: '.$currentId.', response id: '.$response['id'].')');
-            }
-            if (!is_null($response['error']??null)) {
-                throw new JsonrpcException('Request error: '.implode(',',$response['error']));
+        try {
+            $client = new \GuzzleHttp\Client();
+            $opts = [
+                'headers' => [
+                    'accept-encoding' => 'gzip, deflate',
+                ],
+                'json' => $request
+            ];
+            $response = $client->post($this->url, $opts);
+            $response = json_decode($response->getBody()->getContents(), true);
+            if (isset($response['error']['message'])) {
+                throw new JsonrpcException('Request error: ' . $response['error']['message']);
             }
             return $response['result'];
-        } else {
-            return true;
+        }catch (\Throwable $exception){
+            throw new JsonrpcException('Request error: ' . $exception->getMessage());
         }
     }
 }

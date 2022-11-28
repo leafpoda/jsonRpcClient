@@ -13,6 +13,7 @@
     "require": {
         "ext-json": "*",
         "ext-curl": "*",
-        "sensiolabs/consul-php-sdk": "^5.0"
+        "sensiolabs/consul-php-sdk": "^5.0",
+        "guzzlehttp/guzzle": "^7.5"
     }
 }
